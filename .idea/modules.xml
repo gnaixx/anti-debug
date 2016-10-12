@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/anti-reverse.iml" filepath="$PROJECT_DIR$/anti-reverse.iml" />
+      <module fileurl="file://$PROJECT_DIR$/detect-debug/inotify.iml" filepath="$PROJECT_DIR$/detect-debug/inotify.iml" />
+    </modules>
+  </component>
+</project>
