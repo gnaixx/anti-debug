@@ -1,13 +1,14 @@
-package cn.tongdun.android.inotify;
+package cc.gnaixx.detect_debug;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private static final String TAG = "TEST";
+    private static final String TAG = "GNAIXX_JAVA";
     static {
         System.loadLibrary("inotify");
     }

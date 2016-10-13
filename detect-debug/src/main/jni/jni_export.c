@@ -1,36 +1,8 @@
 //
 // Created by 薛祥清 on 16/9/13.
 //
-#include <jni.h>
-#include <android/log.h>
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <sys/inotify.h>
 
-#define TAG "TEST_NDK"
-#define LOGV(...)  __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
-#define LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
-#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
-#define LOGW(...)  __android_log_print(ANDROID_LOG_WARN, TAG, __VA_ARGS__)
-#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
-
-#ifndef NELEM //计算元素个数
-# define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
-#endif
-
-#define EVENT_SIZE (sizeof (struct inotify_event))
-#define EVENT_BUFF_LEN (1024 * EVENT_SIZE)
-#define BUFF_LEN 1024 * 4
-#define PATH_LEN 1024
-#define TCP_PORT "5D8A" //23946
-
-JNIEnv *g_env;
-jclass native_class;
-
-int stop = 0;
+#include "jni_export.h"
 
 void *inotify_read() {
     LOGD("start by read");
@@ -89,7 +61,7 @@ void *inotify_read() {
     close(fd);
 }
 
-JNIEXPORT void start_inotify_read(JNIEnv env, jobject thiz) {
+JNIEXPORT void start_inotify_read(JNIEnv *env, jclass thiz) {
     pthread_t thread;
     int pid = pthread_create(&thread, NULL, inotify_read, NULL);
     if (pid != 0) {
@@ -103,15 +75,18 @@ void *inotify_select() {
     int fd;                         //文件描述符
     int wd;                         //监视器标识符
     int event_len;                  //事件长度
-    char buffer[EVENT_BUFF_LEN];          //事件buffer
+    char buffer[EVENT_BUFF_LEN];    //事件buffer
     char map_path[PATH_LEN];        //监控文件路径
 
     fd_set fds;                     //fd_set
-    struct timeval time_to_wait;    //超时时间 100毫秒
-    time_to_wait.tv_sec = 0;
+    struct timeval time_to_wait;    //超时时间
+    time_to_wait.tv_sec = 1;
     time_to_wait.tv_usec = 0;
 
-    stop = 0;               //初始化监控
+    stop = 0;
+
+
+    //初始化监控
     fd = inotify_init();
     pid_t pid = getpid();
     sprintf(map_path, "/proc/%d/maps", pid); //获取当前APP maps路径
@@ -173,7 +148,7 @@ void *inotify_select() {
     close(fd);
 }
 
-JNIEXPORT void start_inotify_select(JNIEnv env, jobject thiz) {
+JNIEXPORT void start_inotify_select(JNIEnv *env, jclass thiz) {
     pthread_t thread;
     int pid = pthread_create(&thread, NULL, inotify_select, NULL);
     if (pid != 0) {
@@ -182,12 +157,12 @@ JNIEXPORT void start_inotify_select(JNIEnv env, jobject thiz) {
     LOGE("select thread create success");
 }
 
-JNIEXPORT void stop_inotify(JNIEnv env, jobject thiz, jint type) {
+JNIEXPORT void stop_inotify(JNIEnv *env, jclass thiz, jint type) {
     LOGD("stop_inotify");
     stop = type;
 }
 
-JNIEXPORT void net_monitor(JNIEnv env, jobject thiz){
+JNIEXPORT void tcp_monitor(JNIEnv *env, jclass thiz){
     LOGD("net_monitor");
     char buff[BUFF_LEN];
 
@@ -207,23 +182,13 @@ JNIEXPORT void net_monitor(JNIEnv env, jobject thiz){
     }
 }
 
-
-static JNINativeMethod methods[] = {
-        {"startInotifyByRead",   "()V",  start_inotify_read},
-        {"startInotifyBySelect", "()V",  start_inotify_select},
-        {"stopInotify",          "(I)V", stop_inotify},
-        {"netMonitor",           "()V",  net_monitor},
-};
-
-/*
- * 库加载时注册native函数
- */
+//库加载时注册native函数
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (JNI_OK != (*vm)->GetEnv(vm, (void **) &g_env, JNI_VERSION_1_6)) {
         return -1;
     }
     LOGV("JNI_OnLoad()");
-    native_class = (*g_env)->FindClass(g_env, "cn/tongdun/android/inotify/MainActivity");
+    native_class = (*g_env)->FindClass(g_env, "cc/gnaixx/detect_debug/MainActivity");
     if (JNI_OK == (*g_env)->RegisterNatives(g_env, native_class, methods, NELEM(methods))) {
         LOGV("RegisterNatives() --> ok");
     } else {
