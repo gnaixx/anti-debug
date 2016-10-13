@@ -33,6 +33,7 @@ void *inotify_maps_block() {
         int i = 0;
         while (i < event_len) {
             struct inotify_event *event = (struct inotify_event *) &buffer[i];
+            //过滤maps文件
             if (event->len && !strcmp(event->name, "maps")) {
                 if (event->mask & IN_CREATE) {
                     LOGD("create: %s", event->name);
@@ -114,6 +115,7 @@ void *inotify_maps_unblock() {
             }
             int i = 0;
             while (i < event_len) {
+                //注意:这里监控的是maps文件,所以event->name 参数为空
                 struct inotify_event *event = (struct inotify_event *) &buffer[i];
                 if (event->mask & IN_CREATE) {
                     LOGD("create: %s", event->name);
@@ -230,6 +232,7 @@ JNIEXPORT void single_step(){
     time(&start_time);
     //实际需要监控的代码
     sleep(4);
+    //---------------
     time(&end_time);
 
     LOGD("start time:%d, end time:%d", start_time, end_time);

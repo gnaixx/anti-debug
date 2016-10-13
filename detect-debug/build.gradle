@@ -23,8 +23,10 @@ model {
         }
         buildTypes {
             release {
+                debuggable true
                 minifyEnabled false
                 proguardFiles.add(file("proguard-rules.pro"))
+                signingConfig = $("android.signingConfigs.myConfig")
             }
         }
         productFlavors {
@@ -51,6 +53,16 @@ model {
             }
             // To include all cpu architectures, leaves abiFilters empty
             create("all")
+        }
+    }
+    android.signingConfigs {
+        create("myConfig") {
+            keyAlias 'gnaix'
+            keyPassword '990828785'
+            storeFile new File('/Users/xiangqing/Documents/workspace/android/gnaix.jks')
+            storePassword '990828785'
+            storeType "jks"
+            //signConf it
         }
     }
 }
