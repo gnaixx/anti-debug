@@ -7,7 +7,7 @@ model {
         buildToolsVersion "23.0.2"
 
         ndk{
-            moduleName "inotify"
+            moduleName "detect_debug"
             platformVersion = "android-19"
             stl = "stlport_static"
             ldLibs.addAll(["log", "android"])

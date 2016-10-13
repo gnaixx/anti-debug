@@ -4,8 +4,8 @@
 
 #include "jni_export.h"
 
-void *inotify_read() {
-    LOGD("start by read");
+void *inotify_maps_block() {
+    LOGD("start by block");
     int fd;                         //文件描述符
     int wd;                         //监视器标识符
     int event_len;                  //事件长度
@@ -61,17 +61,8 @@ void *inotify_read() {
     close(fd);
 }
 
-JNIEXPORT void start_inotify_read(JNIEnv *env, jclass thiz) {
-    pthread_t thread;
-    int pid = pthread_create(&thread, NULL, inotify_read, NULL);
-    if (pid != 0) {
-        LOGE("read thread create failed [errno:%d, desc:%s]", errno, strerror(errno));
-    }
-    LOGD("read thread create success");
-}
-
-void *inotify_select() {
-    LOGD("start by select");
+void *inotify_maps_unblock() {
+    LOGD("start by unblock");
     int fd;                         //文件描述符
     int wd;                         //监视器标识符
     int event_len;                  //事件长度
@@ -80,11 +71,7 @@ void *inotify_select() {
 
     fd_set fds;                     //fd_set
     struct timeval time_to_wait;    //超时时间
-    time_to_wait.tv_sec = 1;
-    time_to_wait.tv_usec = 0;
-
     stop = 0;
-
 
     //初始化监控
     fd = inotify_init();
@@ -95,19 +82,26 @@ void *inotify_select() {
         return NULL;
     }
     wd = inotify_add_watch(fd, map_path, IN_ALL_EVENTS);  //添加监控 所有事件
-    LOGD("add watch success path:%s", map_path);
+    LOGD("add watch success path:%s, fd:%d, wd:%d", map_path, fd, wd);
+
     while (1) {
         if (stop == 2) break;       //停止监控
 
         FD_ZERO(&fds);
         FD_SET(fd, &fds);
 
+        //之前我把初始化放在循环外 第一次可以阻塞,后面就直接跳过了
+        time_to_wait.tv_sec = 3;
+        time_to_wait.tv_usec = 0;
+
         int rev = select(fd + 1, &fds, NULL, NULL, &time_to_wait);//fd, readfds, writefds, errorfds, timeout:NULL阻塞, {0.0}直接过, timeout
+        //int rev = select(fd + 1, &fds, NULL, NULL, NULL);//fd, readfds, writefds, errorfds, timeout:NULL阻塞, {0.0}直接过, timeout
+        LOGD("select status_code: %d", rev);
         if (rev < 0) {
             //error
             LOGE("select failed [error:%d, desc:%s]", errno, strerror(errno));
         }
-        else if (!rev) {
+        else if (rev == 0) {
             //timeout
             LOGD("select timeout");
         }
@@ -143,18 +137,32 @@ void *inotify_select() {
             }
         }
     }
+    close(fd);
     inotify_rm_watch(fd, wd);
     LOGD("rm watch");
-    close(fd);
 }
 
-JNIEXPORT void start_inotify_select(JNIEnv *env, jclass thiz) {
+JNIEXPORT void start_inotify(JNIEnv *env, jclass thiz, jint type) {
     pthread_t thread;
-    int pid = pthread_create(&thread, NULL, inotify_select, NULL);
-    if (pid != 0) {
-        LOGE("select thread create failed [errno:%d, desc:%s]", errno, strerror(errno));
+
+    if(type == 1)
+    {
+        int pid = pthread_create(&thread, NULL, inotify_maps_block, NULL);
+        if (pid != 0) {
+            LOGE("read thread create failed [errno:%d, desc:%s]", errno, strerror(errno));
+            return;
+        }
+        LOGD("block thread create success");
+    } else if(type == 2)
+    {
+        int pid = pthread_create(&thread, NULL, inotify_maps_unblock, NULL);
+        if (pid != 0) {
+            LOGE("read thread create failed [errno:%d, desc:%s]", errno, strerror(errno));
+            return;
+        }
+        LOGD("unblock thread create success");
     }
-    LOGE("select thread create success");
+
 }
 
 JNIEXPORT void stop_inotify(JNIEnv *env, jclass thiz, jint type) {
@@ -163,7 +171,7 @@ JNIEXPORT void stop_inotify(JNIEnv *env, jclass thiz, jint type) {
 }
 
 JNIEXPORT void tcp_monitor(JNIEnv *env, jclass thiz){
-    LOGD("net_monitor");
+    LOGD("tcp_monitor");
     char buff[BUFF_LEN];
 
     FILE *fp;
@@ -181,6 +189,55 @@ JNIEXPORT void tcp_monitor(JNIEnv *env, jclass thiz){
         }
     }
 }
+
+void tarce_pid(char* path){
+    char buf[BUFF_LEN];
+    FILE *fp;
+    int trace_pid = 0;
+    fp = fopen(path, "r");
+    if (fp == NULL) {
+        LOGE("status open failed:[error:%d, desc:%s]", errno, strerror(errno));
+        return;
+    }
+
+    while (fgets(buf, BUFF_LEN, fp)) {
+        if (strstr(buf, "TracerPid")) {
+            char *strok_rPtr, *temp;
+            temp = strtok_r(buf, ":", &strok_rPtr);
+            temp = strtok_r(NULL, ":", &strok_rPtr);
+            trace_pid = atoi(temp);
+            LOGD("%s, TarcePid:%d", path, trace_pid);
+        }
+    }
+
+    fclose(fp);
+    return;
+}
+
+JNIEXPORT void tarce_pid_monitor(){
+    LOGD("tarce_pid_monitor");
+    int pid = getpid();
+    char path[BUFF_LEN];
+
+    sprintf(path, "/proc/%d/status", pid);
+    tarce_pid(path);
+
+    sprintf(path, "/proc/%d/task/%d/status", pid, pid);
+    tarce_pid(path);
+}
+
+JNIEXPORT void single_step(){
+    time(&start_time);
+    //实际需要监控的代码
+    sleep(4);
+    time(&end_time);
+
+    LOGD("start time:%d, end time:%d", start_time, end_time);
+    if(end_time - start_time > 2){
+        LOGD("fit single_step");
+    }
+}
+
 
 //库加载时注册native函数
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {

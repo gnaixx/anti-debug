@@ -11,49 +11,76 @@
     tools:context="cc.gnaixx.detect_debug.MainActivity">
 
     <Button
-        android:id="@+id/btn_start_read"
-        android:layout_width="wrap_content"
+        android:id="@+id/btn_os_debug"
+        android:layout_width="@dimen/btn_width"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="36dp"
-        android:layout_marginStart="36dp"
-        android:text="start_read"/>
+        android:text="os_debug"/>
+
     <Button
-        android:id="@+id/btn_stop_read"
+        android:id="@+id/btn_start_block"
+        android:layout_width="@dimen/btn_width"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btn_os_debug"
+        android:layout_alignStart="@+id/btn_os_debug"
+        android:layout_below="@+id/btn_os_debug"
+        android:layout_marginTop="@dimen/btn_margin_top"
+        android:text="start_block"/>
+    <Button
+        android:id="@+id/btn_stop_block"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btn_start_select"
+        android:layout_above="@+id/btn_start_unblock"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginEnd="33dp"
-        android:layout_marginRight="33dp"
-        android:text="stop_read"/>
+        android:text="stop"/>
     <Button
-        android:id="@+id/btn_start_select"
+        android:id="@+id/btn_start_unblock"
+        android:layout_width="@dimen/btn_width"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btn_start_block"
+        android:layout_alignStart="@+id/btn_start_block"
+        android:layout_below="@+id/btn_start_block"
+        android:layout_marginTop="@dimen/btn_margin_top"
+        android:text="start_unblock"/>
+    <Button
+        android:id="@+id/btn_stop_unblock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/btn_start_read"
-        android:layout_alignStart="@+id/btn_start_read"
-        android:layout_below="@+id/btn_start_read"
-        android:layout_marginTop="35dp"
-        android:text="start_select"/>
+        android:layout_alignLeft="@+id/btn_stop_block"
+        android:layout_alignStart="@+id/btn_stop_block"
+        android:layout_alignTop="@+id/btn_start_unblock"
+        android:text="stop"/>
     <Button
-        android:id="@+id/btn_stop_select"
-        android:layout_width="wrap_content"
+        android:id="@+id/btn_tcp_monitor"
+        android:layout_width="@dimen/btn_width"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/btn_stop_read"
-        android:layout_alignStart="@+id/btn_stop_read"
-        android:layout_alignTop="@+id/btn_start_select"
-        android:text="stop_select"/>
+        android:layout_alignLeft="@+id/btn_start_unblock"
+        android:layout_alignStart="@+id/btn_start_unblock"
+        android:layout_below="@+id/btn_start_unblock"
+        android:layout_marginTop="@dimen/btn_margin_top"
+        android:text="tcp_port_monitor"/>
+
     <Button
-        android:id="@+id/btn_tcp"
-        android:layout_width="wrap_content"
+        android:id="@+id/btn_tarce_pid_monitor"
+        android:layout_width="@dimen/btn_width"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/btn_start_select"
-        android:layout_alignStart="@+id/btn_start_select"
-        android:layout_below="@+id/btn_start_select"
-        android:layout_marginTop="48dp"
-        android:text="tcp_monitor"/>
+        android:layout_alignLeft="@+id/btn_tcp_monitor"
+        android:layout_alignStart="@+id/btn_tcp_monitor"
+        android:layout_below="@+id/btn_tcp_monitor"
+        android:layout_marginTop="@dimen/btn_margin_top"
+        android:text="tarce_pid_monitor"/>
+
+    <Button
+        android:id="@+id/btn_single_step"
+        android:layout_width="@dimen/btn_width"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btn_tarce_pid_monitor"
+        android:layout_alignStart="@+id/btn_tarce_pid_monitor"
+        android:layout_below="@+id/btn_tarce_pid_monitor"
+        android:layout_marginTop="@dimen/btn_margin_top"
+        android:text="single_step_detect"/>
+
 </RelativeLayout>

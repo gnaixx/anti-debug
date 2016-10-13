@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdlib.h>
 #include <sys/inotify.h>
 
 #include "gtuil.h"
@@ -22,30 +23,45 @@
 #define TCP_PORT "5D8A"                             //23946
 
 
-void *inotify_read();
+//阻塞监控
+void *inotify_maps_block();
 
-JNIEXPORT void start_inotify_read(JNIEnv *, jclass);
+//非阻塞监控
+void *inotify_maps_unblock();
 
-void *inotify_select();
+//开始监控
+JNIEXPORT void start_inotify(JNIEnv *, jclass, jint);
 
-JNIEXPORT void start_inotify_select(JNIEnv *, jclass);
-
+//停止监控
 JNIEXPORT void stop_inotify(JNIEnv *, jclass, jint);
 
+//监控TCP端口
 JNIEXPORT void tcp_monitor(JNIEnv *, jclass);
 
-JNIEXPORT jint JNI_OnLoad(JavaVM *, void *);
+void tarce_pid(char *);
 
+//监控TarcePid值
+JNIEXPORT void tarce_pid_monitor();
+
+time_t start_time;
+time_t end_time;
+
+JNIEXPORT void single_step();
+
+//动态注册
+JNIEXPORT jint JNI_OnLoad(JavaVM *, void *);
 void JNI_OnUnLoad(JavaVM *, void *);
+
 
 JNIEnv *g_env;
 jclass native_class;
 int stop = 0;            //是否停止监控
 
 static JNINativeMethod methods[] = {
-        {"startInotifyByRead",   "()V",  start_inotify_read},
-        {"startInotifyBySelect", "()V",  start_inotify_select},
-        {"stopInotify",          "(I)V", stop_inotify},
-        {"netMonitor",           "()V",  tcp_monitor},
+        {"startInotify",        "(I)V", start_inotify},
+        {"stopInotify",         "(I)V", stop_inotify},
+        {"tcpPortMonitor",      "()V",  tcp_monitor},
+        {"tarcePidMonitor",     "()V",  tarce_pid_monitor},
+        {"singleStepDetect",    "()V",  single_step},
 };
 #endif //ANTI_REVERSE_JNI_EXPORT_H

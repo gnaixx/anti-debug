@@ -1,7 +1,9 @@
 package cc.gnaixx.detect_debug;
 
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -10,20 +12,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "GNAIXX_JAVA";
     static {
-        System.loadLibrary("inotify");
+        System.loadLibrary("detect_debug");
     }
 
-    private native void startInotifyByRead();
-    private native void startInotifyBySelect();
+    private native void startInotify(int type);
     private native void stopInotify(int type);
-    private native void netMonitor();
+    private native void tcpPortMonitor();
+    private native void tarcePidMonitor();
+    private native void singleStepDetect();
 
 
-    private Button btnStartRead;
-    private Button btnStartSelect;
-    private Button btnStopRead;
-    private Button btnStopSelect;
-    private Button btnTCP;
+    private Button btnOsDebug;
+    private Button btnStartBlock;
+    private Button btnStartUnblock;
+    private Button btnStopBlock;
+    private Button btnStopUnblock;
+    private Button btnTCPMonitor;
+    private Button btnTarcePidMonitor;
+    private Button btnSingleStepDetect;
 
 
     @Override
@@ -31,36 +37,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btnStartRead = (Button) findViewById(R.id.btn_start_read);
-        btnStartSelect = (Button) findViewById(R.id.btn_start_select);
-        btnStopRead = (Button) findViewById(R.id.btn_stop_read);
-        btnStopSelect = (Button) findViewById(R.id.btn_stop_select);
-        btnTCP = (Button) findViewById(R.id.btn_tcp);
+        btnOsDebug = (Button) findViewById(R.id.btn_os_debug);
+        btnStartBlock = (Button) findViewById(R.id.btn_start_block);
+        btnStartUnblock = (Button) findViewById(R.id.btn_start_unblock);
+        btnStopBlock = (Button) findViewById(R.id.btn_stop_block);
+        btnStopUnblock = (Button) findViewById(R.id.btn_stop_unblock);
+        btnTCPMonitor = (Button) findViewById(R.id.btn_tcp_monitor);
+        btnTarcePidMonitor = (Button) findViewById(R.id.btn_tarce_pid_monitor);
+        btnSingleStepDetect = (Button) findViewById(R.id.btn_single_step);
 
-        btnStartRead.setOnClickListener(this);
-        btnStartSelect.setOnClickListener(this);
-        btnStopRead.setOnClickListener(this);
-        btnStopSelect.setOnClickListener(this);
-        btnTCP.setOnClickListener(this);
+        btnOsDebug.setOnClickListener(this);
+        btnStartBlock.setOnClickListener(this);
+        btnStartUnblock.setOnClickListener(this);
+        btnStopBlock.setOnClickListener(this);
+        btnStopUnblock.setOnClickListener(this);
+        btnTCPMonitor.setOnClickListener(this);
+        btnTarcePidMonitor.setOnClickListener(this);
+        btnSingleStepDetect.setOnClickListener(this);
+    }
+
+    void detectOsDebug(){
+        boolean connected = android.os.Debug.isDebuggerConnected();
+        Log.d(TAG, "debugger connect status:" + connected);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.btn_start_read:
-                startInotifyByRead();
+            case R.id.btn_os_debug:
+                detectOsDebug();
                 break;
-            case R.id.btn_start_select:
-                startInotifyBySelect();
+            case R.id.btn_start_block:
+                startInotify(1);
                 break;
-            case R.id.btn_stop_read:
+            case R.id.btn_start_unblock:
+                startInotify(2);
+                break;
+            case R.id.btn_stop_block:
                 stopInotify(1);
                 break;
-            case R.id.btn_stop_select:
+            case R.id.btn_stop_unblock:
                 stopInotify(2);
                 break;
-            case R.id.btn_tcp:
-                netMonitor();
+            case R.id.btn_tcp_monitor:
+                tcpPortMonitor();
+                break;
+            case R.id.btn_tarce_pid_monitor:
+                tarcePidMonitor();
+                break;
+            case R.id.btn_single_step:
+                singleStepDetect();
                 break;
 
         }
