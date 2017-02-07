@@ -10,7 +10,7 @@
 
 检测 debug 是为了防止应用被逆向动态分析，所以检测的方法也都是采用 native 开发提高被逆向的成本。
 
-源码地址：[anti-reverse](https://github.com/gnaixx/anti-reverse)
+源码地址：[anti-debug](https://github.com/gnaixx/anti-debug)
 
 ## 0x01 debug开关
 debug 开关默认在编译 release 版本的时候自己会关闭，但是你还是可以通过显示的设置把他打开。但是如果你这么干了，估计你老板要打死你。
